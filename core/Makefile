@@ -4,6 +4,9 @@ CHIPSET ?= stm32h7x
 
 TARGET_BIN=$(TARGET).bin
 TARGET_ELF=$(TARGET).elf
+TARGET_BIN_FLASH=$(TARGET)_FLASH.bin
+TARGET_BIN_QSPIFLASH=$(TARGET)_QSPIFLASH.bin
+
 
 # If you have the arm-none-eabi- toolchain located in a particular place, but not installed for the entire system, add the path here:
 # GCC_PATH=
@@ -280,7 +283,10 @@ $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HEX) $< $@
 
 $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
-	$(BIN) $< $@
+	$(BIN) -R .qspi* $< $(basename $@)_FLASH.bin 
+	$(BIN) -j .qspi* $< $(basename $@)_QSPIFLASH.bin
+#	$(BIN) $< $@
+
 
 $(BUILD_DIR):
 	mkdir $@
@@ -326,8 +332,11 @@ endif
 # dfu-util
 #######################################
 
+program-dfu-qspi:
+	- dfu-util -a 0 -s $(QSPI_ADDRESS) -D $(BUILD_DIR)/$(TARGET_BIN_QSPIFLASH) -d ,0483:$(DAISY_PID)
+
 program-dfu:
-	dfu-util -a 0 -s $(FLASH_ADDRESS):leave -D $(BUILD_DIR)/$(TARGET_BIN) -d ,0483:$(USBPID)
+	- dfu-util -a 0 -s $(INTERNAL_ADDRESS):leave -D $(BUILD_DIR)/$(TARGET_BIN_FLASH) -d ,0483:$(STM_PID)
 
 program-boot:
 	dfu-util -a 0 -s $(INTERNAL_ADDRESS):leave -D $(BOOT_BIN) -d ,0483:$(STM_PID)
