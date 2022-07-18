@@ -200,7 +200,8 @@ CPP_STANDARD ?= -std=gnu++14
 #######################################
 
 INTERNAL_ADDRESS = 0x08000000
-QSPI_ADDRESS ?= 0x90040000
+SPRAM_ADDRESS ?= 0x90040000
+QSPI_ADDRESS ?= 0x900C0000
 
 # For the time being, we'll keep the Daisy Bootloader's PID as df11
 # DAISY_PID = a360
@@ -333,10 +334,10 @@ endif
 #######################################
 
 program-dfu-qspi:
-	- dfu-util -a 0 -s $(QSPI_ADDRESS) -D $(BUILD_DIR)/$(TARGET_BIN_QSPIFLASH) -d ,0483:$(DAISY_PID)
+	- dfu-util -a 0 -s $(QSPI_ADDRESS):leave -D $(BUILD_DIR)/$(TARGET_BIN_QSPIFLASH) -d ,0483:$(DAISY_PID)
 
 program-dfu:
-	- dfu-util -a 0 -s $(INTERNAL_ADDRESS):leave -D $(BUILD_DIR)/$(TARGET_BIN_FLASH) -d ,0483:$(STM_PID)
+	- dfu-util -a 0 -s $(SPRAM_ADDRESS):leave -D $(BUILD_DIR)/$(TARGET_BIN_FLASH) -d ,0483:$(USBPID)
 
 program-boot:
 	dfu-util -a 0 -s $(INTERNAL_ADDRESS):leave -D $(BOOT_BIN) -d ,0483:$(STM_PID)
